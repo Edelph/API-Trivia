@@ -6,17 +6,18 @@ import json
 database_name = "trivia"
 password = "root"
 user_name = "postgres"
-database_path = "postgres://{}/{}".format('localhost:5432', database_name)
-# database_path = "postgresql://{}:{}@{}/{}".format(
-#     user_name, password, 'localhost:5432', database_name)
+# database_path = "postgres://{}/{}".format('localhost:5432', database_name)
+database_path = "postgres://{}:{}@{}/{}".format(
+    user_name, password, 'localhost:5432', database_name)
 
 
-db = SQLAlchemy()
 
 '''
 setup_db(app)
     binds a flask application and a SQLAlchemy service
 '''
+db = SQLAlchemy()
+
 
 
 def setup_db(app, database_path=database_path):
@@ -25,6 +26,7 @@ def setup_db(app, database_path=database_path):
     db.app = app
     db.init_app(app)
     db.create_all()
+
 
 
 '''

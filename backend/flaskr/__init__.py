@@ -126,6 +126,7 @@ def create_app(test_config=None):
         question = data.get('question', None)
         difficulty = data.get('difficulty', None)
         category = data.get('category', None)
+
         print("answer {}".format(answer))
 
         if answer is None or question is None or difficulty is None or category is None or answer == "":
@@ -152,13 +153,13 @@ def create_app(test_config=None):
   '''
     @app.route('/questions/search', methods=["POST"])
     def search_questions():
-        search_term = request.get_json().get("searchTerm", None)
-        print(search_term)
+        search_term = request.get_json().get("search_term", None)
+
         if search_term is None:
             abort(400)
 
         questions = Question.query.order_by(desc(Question.id)).filter(
-            Question.question.ilike("%{}%".format(search_term))).all()
+            Question.question.like("%{}%".format(search_term))).all()
 
         formatted_questions = [q.format() for q in questions]
 
@@ -178,7 +179,7 @@ def create_app(test_config=None):
   '''
 
     @app.route("/categories/<int:category_id>/questions", methods=["GET"])
-    def questionsCategory(category_id):
+    def get_questions_by_category(category_id):
         category = Category.query.filter(
             Category.id == category_id).one_or_none()
 
