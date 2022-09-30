@@ -127,8 +127,6 @@ def create_app(test_config=None):
         difficulty = data.get('difficulty', None)
         category = data.get('category', None)
 
-        print("answer {}".format(answer))
-
         if answer is None or question is None or difficulty is None or category is None or answer == "":
             abort(400)
         newQuestion = Question(question=question, answer=answer,
@@ -141,7 +139,50 @@ def create_app(test_config=None):
             "created": newQuestion.id
         }), 201
 
+    @app.route('/questions/<int:question_id>', methods=["PUT"])
+    def update_questions(question_id):
+        data = request.get_json()
+
+        answer = data.get("answer", None)
+        question = data.get('question', None)
+        difficulty = data.get('difficulty', None)
+        category = data.get('category', None)
+
+        if answer is None or question is None or difficulty is None or category is None or answer == "":
+            abort(400)
+
+        db_question = Question.query.filter(
+            Question.id == question_id).one_or_none()
+
+        if db_question is None:
+            abort(404)
+
+        db_question.question = question
+        db_question.answer = answer
+        db_question.category = category
+        db_question.difficulty = difficulty
+
+        db_question.update()
+        return jsonify({
+            "success": True,
+            "updated": question_id
+        }), 200
+
+    @app.route('/questions/<int:question_id>', methods=["GET"])
+    def get_question(question_id):
+        db_question = Question.query.filter(
+            Question.id == question_id).one_or_none()
+
+        if db_question is None:
+            abort(404)
+
+        return jsonify({
+            "question": db_question.format(),
+            "success": True
+        }), 200
+
     '''
+    
   @TODO: 
   Create a POST endpoint to get questions based on a search term. 
   It should return any questions for whom the search term 
@@ -153,13 +194,13 @@ def create_app(test_config=None):
   '''
     @app.route('/questions/search', methods=["POST"])
     def search_questions():
-        search_term = request.get_json().get("search_term", None)
+        search_term = request.get_json().get("searchTerm", None)
 
         if search_term is None:
             abort(400)
 
         questions = Question.query.order_by(desc(Question.id)).filter(
-            Question.question.like("%{}%".format(search_term))).all()
+            Question.question.ilike("%{}%".format(search_term))).all()
 
         formatted_questions = [q.format() for q in questions]
 
@@ -193,7 +234,7 @@ def create_app(test_config=None):
         return jsonify({
             'questions': formatted_questions,
             'total_questions': len(formatted_questions),
-            'currentCategory': category.format()
+            'current_category': category.format()
         })
 
     '''
@@ -212,8 +253,6 @@ def create_app(test_config=None):
         data = request.get_json()
         previous_questions = data.get("previous_questions")
         quiz_category = data.get("quiz_category")
-
-        print(quiz_category.get("id"))
 
         if quiz_category.get("id") != 0:
             questions = Question.query.filter(
